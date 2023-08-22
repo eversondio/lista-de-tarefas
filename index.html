@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lista de Tarefas</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Minha Lista de Tarefas</h1>
+    <div class="task-controls">
+      <input type="text" id="taskInput" placeholder="Digite uma nova tarefa">
+      <button id="addButton">Adicionar Tarefa</button>
+    </div>
+    <ul id="taskList"></ul>
+    <div class="controls">
+      <button id="clearButton">Limpar Tarefas</button>
+      <button id="toggleAllButton">Marcar/Desmarcar Todos</button>
+      <button id="sortButton">Ordenar por Prioridade</button>
+    </div>
+  </div>
+
+  <script>
+    const addButton = document.getElementById('addButton');
+    const taskInput = document.getElementById('taskInput');
+    const taskList = document.getElementById('taskList');
+    const clearButton = document.getElementById('clearButton');
+    const toggleAllButton = document.getElementById('toggleAllButton');
+    const sortButton = document.getElementById('sortButton');
+
+    addButton.addEventListener('click', () => {
+      const taskText = taskInput.value;
+      if (taskText.trim() !== '') {
+        const li = document.createElement('li');
+        li.innerHTML = `<input type="checkbox"><span>${taskText}</span><button class="editButton">Editar</button><button class="deleteButton">Excluir</button>`;
+        taskList.appendChild(li);
+        taskInput.value = '';
+      }
+    });
+
+    taskList.addEventListener('click', (event) => {
+      if (event.target.classList.contains('deleteButton')) {
+        event.target.parentElement.remove();
+      } else if (event.target.classList.contains('editButton')) {
+        const taskSpan = event.target.parentElement.querySelector('span');
+        const newTaskText = prompt('Editar tarefa:', taskSpan.textContent);
+        if (newTaskText !== null) {
+          taskSpan.textContent = newTaskText;
+        }
+      }
+    });
+
+    clearButton.addEventListener('click', () => {
+      taskList.innerHTML = '';
+    });
+
+    toggleAllButton.addEventListener('click', () => {
+      const checkboxes = taskList.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach((checkbox) => {
+        checkbox.checked = !checkbox.checked;
+      });
+    });
+
+    sortButton.addEventListener('click', () => {
+      const tasks = Array.from(taskList.children);
+      tasks.sort((a, b) => {
+        const aPriority = a.querySelector('select').value;
+        const bPriority = b.querySelector('select').value;
+        return aPriority.localeCompare(bPriority);
+      });
+      taskList.innerHTML = '';
+      tasks.forEach((task) => {
+        taskList.appendChild(task);
+      });
+    });
+  </script>
+</body>
+</html>
