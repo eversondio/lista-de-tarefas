@@ -11,11 +11,18 @@
       <input type="text" id="taskInput" placeholder="Digite uma nova tarefa">
       <button id="addButton">Adicionar Tarefa</button>
     </div>
+    <div>
+      <label for="sortBy">Ordenar por:</label>
+      <select id="sortBy">
+        <option value="none">Nenhum</option>
+        <option value="date">Data</option>
+        <option value="priority">Prioridade</option>
+      </select>
+    </div>
     <ul id="taskList"></ul>
     <div class="controls">
       <button id="clearButton">Limpar Tarefas</button>
       <button id="toggleAllButton">Marcar/Desmarcar Todos</button>
-      <button id="sortButton">Ordenar por Prioridade</button>
     </div>
   </div>
 
@@ -25,53 +32,70 @@
     const taskList = document.getElementById('taskList');
     const clearButton = document.getElementById('clearButton');
     const toggleAllButton = document.getElementById('toggleAllButton');
-    const sortButton = document.getElementById('sortButton');
+    const sortBySelect = document.getElementById('sortBy');
+    
+    let tasks = [];
 
     addButton.addEventListener('click', () => {
-      const taskText = taskInput.value;
-      if (taskText.trim() !== '') {
-        const li = document.createElement('li');
-        li.innerHTML = `<input type="checkbox"><span>${taskText}</span><button class="editButton">Editar</button><button class="deleteButton">Excluir</button>`;
-        taskList.appendChild(li);
+      const taskText = taskInput.value.trim();
+      if (taskText !== '') {
+        const task = { text: taskText, done: false };
+        tasks.push(task);
+        renderTasks();
         taskInput.value = '';
       }
     });
 
     taskList.addEventListener('click', (event) => {
-      if (event.target.classList.contains('deleteButton')) {
-        event.target.parentElement.remove();
-      } else if (event.target.classList.contains('editButton')) {
-        const taskSpan = event.target.parentElement.querySelector('span');
-        const newTaskText = prompt('Editar tarefa:', taskSpan.textContent);
-        if (newTaskText !== null) {
-          taskSpan.textContent = newTaskText;
-        }
+      const target = event.target;
+      const taskIndex = parseInt(target.getAttribute('data-index'));
+
+      if (target.classList.contains('deleteButton')) {
+        tasks.splice(taskIndex, 1);
+        renderTasks();
+      } else if (target.classList.contains('doneCheckbox')) {
+        tasks[taskIndex].done = target.checked;
+        renderTasks();
       }
     });
 
     clearButton.addEventListener('click', () => {
-      taskList.innerHTML = '';
+      tasks = [];
+      renderTasks();
     });
 
     toggleAllButton.addEventListener('click', () => {
-      const checkboxes = taskList.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach((checkbox) => {
-        checkbox.checked = !checkbox.checked;
-      });
+      const allDone = tasks.every(task => task.done);
+      tasks.forEach(task => task.done = !allDone);
+      renderTasks();
     });
 
-    sortButton.addEventListener('click', () => {
-      const tasks = Array.from(taskList.children);
-      tasks.sort((a, b) => {
-        const aPriority = a.querySelector('select').value;
-        const bPriority = b.querySelector('select').value;
-        return aPriority.localeCompare(bPriority);
-      });
-      taskList.innerHTML = '';
-      tasks.forEach((task) => {
-        taskList.appendChild(task);
-      });
+    sortBySelect.addEventListener('change', () => {
+      sortTasks();
+      renderTasks();
     });
+
+    function renderTasks() {
+      taskList.innerHTML = '';
+      tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <input type="checkbox" class="doneCheckbox" data-index="${index}" ${task.done ? 'checked' : ''}>
+          <span>${task.text}</span>
+          <button class="deleteButton" data-index="${index}">Excluir</button>
+        `;
+        taskList.appendChild(li);
+      });
+    }
+
+    function sortTasks() {
+      const sortBy = sortBySelect.value;
+      if (sortBy === 'date') {
+        tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
+      } else if (sortBy === 'priority') {
+        tasks.sort((a, b) => a.priority.localeCompare(b.priority));
+      }
+    }
   </script>
 </body>
 </html>
